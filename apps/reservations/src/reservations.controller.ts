@@ -21,15 +21,23 @@ import { EventsService } from './events.service';
 import { handlebars } from 'hbs';
 import { Request, Response } from 'express';
 import { ReservationDto } from './dto/reservation-dto';
+import { EventDto } from '@app/common/dto/event-dto';
+import { EventsRepository } from './events.repository';
 
 @Controller()
 export class ReservationsController {
   constructor(
     private readonly reservationsService: ReservationsService,
     private readonly eventsService: EventsService,
-  ) { }
+    private readonly eventsRepository: EventsRepository // Inject the EventsRepository
 
+  ) { }
+@Post('event')
+async createMe(@Body() createEve:any,@CurrentUser() user:UserDto){
+  await this.eventsService.createEvent(createEve,user)
+}
   @UseGuards(CommonAuthGuardMixin())
+  @Post()
   @Post()
   async create(
     @CurrentUser() user: UserDto,
@@ -37,6 +45,7 @@ export class ReservationsController {
     @Req() request: Request,
     @Res() response: Response
   ) {
+   try{
     console.log("create cure", request.headers);
     
     const refererHeader = request.headers.referer;
@@ -53,17 +62,18 @@ export class ReservationsController {
       return response.status(404).json({ error: 'Event not found' });
     }
   
-    console.log(event, "this event");
+    console.log(event._id, "this event");
   
     const cardExpireSplit = createReservationDto.cardexpire.split('/');
-  
+    await this.eventsRepository.findByIdAndUpdate(eventId, { $inc: { tickets: -Number(createReservationDto.tickets) } });
+
     const body = {
       event: {
         tickets: Number(createReservationDto.tickets),
         eventId
       },
       charge: {
-        amount: Number(createReservationDto.tickets) * 11,
+        amount: Number(createReservationDto.tickets) * event.price,
         card: {
           cvc: createReservationDto.cardcvc,
           exp_month: Number(cardExpireSplit[0]),
@@ -72,10 +82,20 @@ export class ReservationsController {
         }
       }
     };
-  
-    await this.reservationsService.create(body, user);
+    console.log("req body",body)
+  // Update the ticket value in the event
+     // Update the ticket value in the event
+    
+     await this.reservationsService.create(body, user);
+
     return response.json({m:"success"});
+   }
+   catch(err){
+    return response.json(err.message)
+   }
   }
+  
+
   
 
   @Get()
@@ -122,9 +142,9 @@ export class ReservationsController {
     const event = await this.eventsService.findOne(id)
     if (!user) return response.json({m:"not a user"});
 
-    return {
+    return response.json({
       user,
       event,
-    };
+    })
   }
 }

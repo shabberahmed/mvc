@@ -8,6 +8,7 @@ import { EventDto } from '@app/common/dto/event-dto';
 
 @Injectable()
 export class EventsRepository extends AbstractRepository<EventDocument> {
+
     protected readonly logger = new Logger(EventsRepository.name);
 
     constructor(
@@ -17,13 +18,17 @@ export class EventsRepository extends AbstractRepository<EventDocument> {
     ) {
         super(eventModel, connection);
     }
-
+    async findByIdAndUpdate(eventId: string, update: any): Promise<EventDocument> {
+        return this.eventModel.findByIdAndUpdate(eventId, update, { new: true });
+      }
+    
     async updateEventTicket(
         filterQuery: FilterQuery<EventDocument>,
         update: UpdateQuery<EventDocument>,
         eventData: EventDto,
         options?: SaveOptions,
     ): Promise<any> {
+        console.log("we are checking")
         try {
             const document = await this.eventModel.findOne(filterQuery).session(options.session)
 

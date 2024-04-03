@@ -8,6 +8,8 @@ import { catchError, flatMap, lastValueFrom, map, mergeMap, of, } from 'rxjs';
 import { EventsRepository } from './events.repository';
 import { Connection } from 'mongoose';
 import { InjectConnection } from '@nestjs/mongoose';
+import { EventDto } from '@app/common/dto/event-dto';
+import { ReservationDto } from './dto/reservation-dto';
 
 @Injectable()
 export class ReservationsService {
@@ -20,8 +22,9 @@ export class ReservationsService {
     @Inject(PAYMENTS_SERVICE) private readonly paymentService: ClientProxy,
 
   ) { }
+
   async create(createReservationDto: any, user: UserDto) {
- 
+ console.log("session started")
     const session = await this.connection.startSession()
     console.log("start session")
     return await session.withTransaction(async () => {
@@ -33,9 +36,9 @@ export class ReservationsService {
         userId: user._id,
         timestamp: new Date(),
         ...createReservationDto.event
-      }, { session })
+      })
 
-      // const eventUpdated = await this.eventsRepository.updateEventTicket(
+      //  await this.eventsRepository.updateEventTicket(
       //   { _id: createReservationDto.event.eventId },
       //   { $inc: { tickets: -Number(createReservationDto.event.tickets) } },
       //   createReservationDto.event,
@@ -61,11 +64,11 @@ export class ReservationsService {
     // }
   }
 
+  
   async findAll() {
     console.log("inside the reservation get");
     try {
-        const data = await this.reservationsRepository.findAll({});
-        console.log("Data fetched successfully:", data);
+        const data = await this.eventsRepository.findAll({});
         return data;
     } catch (error) {
         console.error("Error fetching data:", error);
@@ -75,7 +78,8 @@ export class ReservationsService {
 
 
   async findOne(_id: string) {
-    return this.reservationsRepository.findOne({ _id });
+    console.log(_id,"asajsjasah")
+    return this.eventsRepository.findOne({ _id });
   }
 
   async updateOne(_id: string, updateReservationDto: UpdateReservationDto) {
