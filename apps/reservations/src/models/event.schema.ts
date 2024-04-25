@@ -4,9 +4,6 @@ import mongoose from 'mongoose';
 
 @Schema({ optimisticConcurrency: true, })
 export class EventDocument extends CommonDocument {
-    save() {
-      throw new Error('Method not implemented.');
-    }
     @Prop({ default: 50 })
     tickets: number;
 

@@ -20,7 +20,7 @@ export class EventsService {
     session.startTransaction();
 
     try {
-      const createdEvent = await this.eventsRepository.create(eventData);
+      const createdEvent = await this.eventsRepository.create(eventData, { session });
       await session.commitTransaction();
       return createdEvent;
     } catch (error) {

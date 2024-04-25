@@ -7,7 +7,6 @@ import {
     IsDefined,
     ValidateNested,
 } from 'class-validator';
-import { ReservationDocument } from '../models/reservation.schema';
 
 export class ReservationDto {
     @IsDefined()
@@ -20,7 +19,7 @@ export class ReservationDto {
 
     @IsDefined()
     @IsNotEmpty()
-    tickets: number
+    tickets: string
 
     @IsDefined()
     @IsNotEmpty()
@@ -33,5 +32,4 @@ export class ReservationDto {
     @IsDefined()
     @IsNotEmpty()
     cardcvc: string
-  event: Omit<ReservationDocument, "_id">;
 }
