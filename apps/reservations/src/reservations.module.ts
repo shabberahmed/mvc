@@ -22,6 +22,7 @@ import {
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { EventsRepository } from './events.repository';
 import { EventsService } from './events.service';
+import { RedisclientService } from '@app/common/redisclient/redisclient.service';
 
 @Module({
   imports: [
@@ -70,7 +71,7 @@ import { EventsService } from './events.service';
       { name: EventDocument.name, schema: EventSchema },
     ]),
   ],
-  providers: [ReservationsService, EventsService, ReservationsRepository, EventsRepository],
+  providers: [ReservationsService, EventsService, ReservationsRepository, EventsRepository,RedisclientService],
   controllers: [ReservationsController],
 })
 export class ReservationsModule implements NestModule {
