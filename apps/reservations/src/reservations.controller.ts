@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Req, Res, UseGuards, Render, UseFilters, Put, Param, Delete, OnModuleDestroy } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, Res, UseGuards, Render, UseFilters, Put, Param, Delete, OnModuleDestroy, Inject, BadRequestException } from '@nestjs/common';
 import { ReservationsService } from './reservations.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { UpdateReservationDto } from './dto/update-reservation.dto';
@@ -7,7 +7,7 @@ import { EventsService } from './events.service';
 import { ReservationDto } from './dto/reservation-dto';
 import { EventDto } from '@app/common/dto/event-dto';
 import { EventsRepository } from './events.repository';
-import * as redis from 'redis';
+import { Redis } from 'ioredis';
 import { Request,Response } from 'express';
 
 @Controller()
@@ -17,6 +17,7 @@ export class ReservationsController  {
     private readonly reservationsService: ReservationsService,
     private readonly eventsService: EventsService,
     private readonly eventsRepository: EventsRepository,
+    @Inject('REDIS_CLIENT') private readonly redisClient: Redis
   ) {}
 
 
@@ -45,7 +46,10 @@ export class ReservationsController  {
 
         const splitOriginUrl = request.headers.referer.split('/');
         const eventId = splitOriginUrl[splitOriginUrl.length - 1];
-
+        const lock = await this.redisClient.set('ticket_lock', 'locked', 'EX', 10, 'NX');
+        if (!lock) {
+          throw new BadRequestException('Concurrent request in progress, please try again later');
+        }
         const event = await this.eventsService.findOneById(eventId);
         console.log(event, 'check bool');
         if (!event) {
@@ -90,6 +94,8 @@ export class ReservationsController  {
     catch (err) {
       return response.json(err.message);
     } finally {
+      await this.redisClient.del('ticket_lock');
+
     }
   
   }
