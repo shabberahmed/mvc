@@ -9,7 +9,7 @@ export class AuthService {
   constructor(
     private readonly configService: ConfigService,
     private readonly jwtService: JwtService,
-  ) { }
+  ) {}
   async login(user: UserDocument, response: Response) {
     const tokenPayload = { userId: user._id.toHexString() };
 
@@ -19,6 +19,6 @@ export class AuthService {
       expires.getSeconds() + this.configService.get('JWT_EXPIRATION'),
     );
     response.cookie('Authentication', token, { httpOnly: true, expires });
-    return token
+    return token;
   }
 }
