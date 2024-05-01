@@ -2,17 +2,14 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UsersModule } from './users/users.module';
-import { AppLoggerMiddleware, } from '@app/common';
+import { AppLoggerMiddleware } from '@app/common';
 import { JwtModule } from '@nestjs/jwt';
 import * as joi from 'joi';
-import {
-  ConfigService,
-  ConfigModule,
-} from '@nestjs/config';
+import { ConfigService, ConfigModule } from '@nestjs/config';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { ClientsModule } from '@nestjs/microservices';
-'fdsfd'
+import { TwilioService } from '@app/common/twilio/twilio.service';
 @Module({
   imports: [
     UsersModule,
@@ -25,7 +22,10 @@ import { ClientsModule } from '@nestjs/microservices';
         JWT_EXPIRATION: joi.string().required(),
         HTTP_PORT: joi.number().required(),
         TCP_PORT: joi.number().required(),
-      })
+        TWILIO_ID: joi.string().required(),
+        TWILIO_SECRET_KEY: joi.string().required(),
+        TWILIO_NUMBER: joi.string().required(),
+      }),
     }),
     JwtModule.registerAsync({
       useFactory: (configService: ConfigService) => ({
@@ -38,7 +38,7 @@ import { ClientsModule } from '@nestjs/microservices';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, TwilioService],
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
